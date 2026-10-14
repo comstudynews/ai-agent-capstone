@@ -1,7 +1,5 @@
 # Recipe 12. PostgreSQL Checkpointer
 
-**학습 순서:** 무엇을 배우는가 → 왜 필요한가 → 작은 실행 → 코드 읽기 → 결과 확인 → 응용
-
 ## 1. 무엇을 배우는가?
 Thread 기록과 Graph 상태 영속화의 차이를 설명합니다.
 

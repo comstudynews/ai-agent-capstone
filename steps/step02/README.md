@@ -1,7 +1,5 @@
 # Recipe 02. MCP Server와 Inspector
 
-**학습 순서:** 무엇을 배우는가 → 왜 필요한가 → 작은 실행 → 코드 읽기 → 결과 확인 → 응용
-
 ## 1. 무엇을 배우는가?
 MCP Server가 Host에 기능을 알리는 방식과 Tool·Resource·Prompt 호출 과정을 구분합니다.
 
