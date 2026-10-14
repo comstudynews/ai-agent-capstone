@@ -51,7 +51,7 @@ async def inspect() -> dict:
                 result = await session.call_tool(
                     "create_issue_ticket", {**sample, "approval_token": token})
                 if result.isError:
-                    raise RuntimeError("승인된 MCP 티켓 생성이 실패했습니다.")
+                    raise RuntimeError("승인된 MCP 티켓 생성이 실패했습니다: " + str(result.content)[:600])
                 retry = await session.call_tool(
                     "create_issue_ticket", {**sample, "approval_token": token})
                 if retry.isError:
