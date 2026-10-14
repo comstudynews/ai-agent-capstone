@@ -15,7 +15,7 @@ jobs:
           python-version: "3.11"
       - uses: astral-sh/setup-uv@v6
       - name: Install
-        run: uv sync --python 3.11 --group dev
+        run: uv sync --locked --python 3.11 --group dev
       - name: Run tests
         run: uv run --python 3.11 python -m pytest -q
       - name: Run every lesson checkpoint
@@ -32,7 +32,7 @@ jobs:
           python-version: "3.11"
       - uses: astral-sh/setup-uv@v6
       - name: Install MCP dependency group
-        run: uv sync --python 3.11 --extra agent
+        run: uv sync --locked --python 3.11 --extra agent
       - name: Execute real MCP Client-Server stdio exchange
         env:
           DEMO_ADMIN_KEY: ci-local-only-test-secret-123456
@@ -48,7 +48,7 @@ jobs:
         with:
           node-version: "22"
       - name: Install
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Typecheck
         run: npx tsc --noEmit
       - name: Build
@@ -81,7 +81,7 @@ jobs:
           python-version: "3.11"
       - uses: astral-sh/setup-uv@v6
       - name: Install integration dependencies
-        run: uv sync --python 3.11 --group dev --extra all
+        run: uv sync --locked --python 3.11 --group dev --extra all
       - name: Wait for Qdrant
         run: curl --retry 15 --retry-delay 2 --retry-connrefused --fail http://127.0.0.1:6333/collections
       - name: Test actual Qdrant search and Postgres persistence

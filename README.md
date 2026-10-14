@@ -29,13 +29,13 @@ npm --version
 git clone https://github.com/comstudynews/ai-agent-capstone.git
 cd ai-agent-capstone
 uv python install 3.11
-uv sync --python 3.11 --group dev
+uv sync --locked --python 3.11 --group dev
 uv run python scripts/check_env.py
 uv run python -m pytest -q
 uv run python -m app.lesson 1
 ```
 
-`uv sync`는 `pyproject.toml`의 의존성을 설치하고 `.venv` 가상환경을 만듭니다. 패키지 다운로드를 위한 인터넷이 필요합니다. 생성된 `uv.lock`은 **잠금 파일 생성 이후**에 사용하므로, 첫 설치에서 패키지 해결 시간이 걸릴 수 있습니다. 명령이 실패하면 오류 내용을 읽고 [문제 해결 표](docs/TROUBLESHOOTING.md)를 확인합니다.
+`uv sync --locked`는 저장소에 포함된 `uv.lock`의 확정 버전을 설치하고 `.venv` 환경을 만듭니다. 처음 설치할 때는 인터넷 연결이 필요합니다. 명령이 실패하면 [문제 해결 표](docs/TROUBLESHOOTING.md)를 확인합니다.
 
 **정상 결과:** `pytest` 테스트가 성공하고, Recipe 01에서 Tool·Resource·Prompt 기능 목록이 JSON으로 출력됩니다. 이는 기초 실습 결과입니다.
 
@@ -62,7 +62,7 @@ curl http://127.0.0.1:8000/health
 MCP는 HTTP API 서버와 별개입니다. 여기서는 **stdio 기반 MCP Client가 MCP Server 자식 프로세스를 자동으로 시작**합니다.
 
 ```bash
-uv sync --python 3.11 --group dev --extra agent
+uv sync --locked --python 3.11 --group dev --extra agent
 uv run --extra agent python -m app.mcp_client
 ```
 
@@ -92,7 +92,7 @@ Inspector가 안내하는 접속 주소를 브라우저로 열고 `Connect`한 �
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 

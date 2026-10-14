@@ -43,7 +43,7 @@ curl -N -X POST http://127.0.0.1:8000/chat/stream -H 'Content-Type: application/
 
 ## 4. 웹 UI 연결
 
-`cd frontend && npm install && npm run dev` 실행 후 <http://localhost:3000> 접속:
+`cd frontend && npm ci && npm run dev` 실행 후 <http://localhost:3000> 접속:
 
 - [ ] 질문을 보내면 답변이 한 번에 나타나지 않고 점진적으로 표시됩니다.
 - [ ] 새 대화 시 이전 Thread ID가 분리됩니다.
