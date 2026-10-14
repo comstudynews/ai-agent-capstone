@@ -1,3 +1,11 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*", "steps*"]
+exclude = ["tests*", "frontend*"]
+
 [project]
 name = "ai-agent-capstone"
 version = "1.0.0"
