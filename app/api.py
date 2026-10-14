@@ -114,6 +114,55 @@ async def chat_stream(body: ChatIn):
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
+class UIMessage(BaseModel):
+    role: str
+    parts: list[dict] = Field(default_factory=list)
+
+
+class UIChatIn(BaseModel):
+    id: str | None = None
+    messages: list[UIMessage]
+
+
+@app.post("/chat/ui-stream")
+async def ui_stream(body: UIChatIn):
+    """Small UI Message Stream v1 adapter. External AI SDK JS build not validated here."""
+    from app.ui_protocol import ui_done, ui_frame
+    user_messages = [m for m in body.messages if m.role == "user"]
+    if not user_messages:
+        raise HTTPException(422, detail="A user message is required")
+    message = " ".join(str(p.get("text", "")) for p in user_messages[-1].parts
+                       if p.get("type") == "text").strip()
+    if not message:
+        raise HTTPException(422, detail="A nonempty text part is required")
+    thread = body.id or str(uuid4())
+    text_id = "txt_" + uuid4().hex
+    message_id = "msg_" + uuid4().hex
+
+    async def generate():
+        yield ui_frame({"type": "start", "messageId": message_id})
+        yield ui_frame({"type": "start-step"})
+        yield ui_frame({"type": "text-start", "id": text_id})
+        try:
+            result = await answer(message, thread)
+            for index in range(0, len(result["answer"]), 20):
+                yield ui_frame({"type": "text-delta", "id": text_id,
+                                "delta": result["answer"][index:index + 20]})
+                await asyncio.sleep(0)
+            yield ui_frame({"type": "text-end", "id": text_id})
+            yield ui_frame({"type": "finish-step"})
+            yield ui_frame({"type": "finish"})
+        except Exception:
+            logger.exception("UI stream failure")
+            yield ui_frame({"type": "error", "errorText": "요청 처리에 실패했습니다."})
+        yield ui_done()
+
+    return StreamingResponse(generate(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache",
+                                      "x-vercel-ai-ui-message-stream": "v1",
+                                      "X-Accel-Buffering": "no"})
+
+
 @app.post("/tickets/approve")
 async def approve_ticket(body: CreateTicketIn, x_demo_admin_key: str | None = Header(default=None)):
     """Protected *local* demo endpoint; not a production authentication flow.

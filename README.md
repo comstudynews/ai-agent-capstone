@@ -32,7 +32,7 @@ curl -N -X POST http://127.0.0.1:8000/chat/stream \
   -d '{"message":"payment-api 500 장애 상태"}'
 ```
 
-Frontend (requires npm registry/network): `cd frontend && npm install && npm run dev`.
+Frontend (requires npm registry/network): `cd frontend && npm install && npm run dev`. The Fetch-SSE UI is `/`; an additional UI Message Stream v1 / `useChat` integration example is `/ai-sdk` (see `app/ui_protocol.py`).
 
 ## Actual MCP and LLM track
 

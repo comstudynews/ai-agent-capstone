@@ -27,6 +27,7 @@ flowchart TD
 
 - `POST /chat`: `{message, thread_id?}` -> `{thread_id, answer, events}`.
 - `POST /chat/stream`: same request -> SSE `start`, `state`, `token`, `done` or `error`.
+- `POST /chat/ui-stream`: AI SDK UI Message Stream v1 start/text-delta/finish/[DONE] (not the same format as custom SSE).
 - `POST /tickets/approve`: `{title, description, request_id}` plus private `X-Demo-Admin-Key` -> created ticket result.
 - MCP Tools: search_operations_manual, search_issue_tickets, read_monitoring_status, create_issue_ticket.
 - MCP Resource: `runbook://incident/{incident_type}`.
