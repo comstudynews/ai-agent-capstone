@@ -13,7 +13,8 @@ from pydantic import BaseModel, Field
 
 from app.contracts import ChatIn, CreateTicketIn
 from app.core import process
-from app.store import create_ticket
+from app.store import IdempotencyConflictError
+from app.approval import create_approved_ticket, issue_approval_token
 from app.streaming import frame
 
 load_dotenv()
@@ -175,4 +176,10 @@ async def approve_ticket(body: CreateTicketIn, x_demo_admin_key: str | None = He
     import secrets
     if not x_demo_admin_key or not secrets.compare_digest(x_demo_admin_key, expected):
         raise HTTPException(403, "Write operation requires approval key")
-    return create_ticket(body.title, body.description, body.request_id)
+    # 신뢰할 수 있는 승인 API와 MCP 쓰기 Tool에 동일한 서명 검사를 적용합니다.
+    try:
+        token = issue_approval_token(body.title, body.description, body.request_id)
+        return create_approved_ticket(body.title, body.description, body.request_id, token)
+    except IdempotencyConflictError as exc:
+        raise HTTPException(status_code=409, detail={"code": "IDEMPOTENCY_CONFLICT",
+                                                     "message": str(exc)}) from exc

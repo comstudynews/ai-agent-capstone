@@ -5,7 +5,8 @@ Do not print to stdout while stdio protocol is active.
 from mcp.server.fastmcp import FastMCP
 from app.knowledge import get_runbook, monitoring_status
 from app.rag import retrieve
-from app.store import create_ticket, search_tickets
+from app.store import search_tickets
+from app.approval import create_approved_ticket
 
 mcp = FastMCP("Fictional Operations Assistant")
 
@@ -29,9 +30,10 @@ def read_monitoring_status(service: str) -> dict:
 
 
 @mcp.tool()
-def create_issue_ticket(title: str, description: str, request_id: str) -> dict:
-    """Mutating demo tool. Only a trusted approval controller may invoke this."""
-    return create_ticket(title, description, request_id)
+def create_issue_ticket(title: str, description: str, request_id: str,
+                        approval_token: str) -> dict:
+    """요청 내용과 만료시간에 서명된 승인 토큰 없이는 실행할 수 없습니다."""
+    return create_approved_ticket(title, description, request_id, approval_token)
 
 
 @mcp.resource("runbook://incident/{incident_type}")

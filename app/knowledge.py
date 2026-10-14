@@ -10,7 +10,11 @@ RUNBOOKS = {
     "http-500": "서버 로그 확인 → DB 연결 확인 → 최근 변경 검토 → 롤백 여부 판단",
     "db-down": "DB 포트 확인 → 계정 권한 확인 → 연결 풀 재설정 여부 판단",
 }
-MONITORING = {"payment-api": {"service": "payment-api", "status": "DEGRADED", "http_5xx": 12}}
+MONITORING = {
+    "payment-api": {"service": "payment-api", "status": "DEGRADED", "http_5xx": 12},
+    "inventory-api": {"service": "inventory-api", "status": "OK", "http_5xx": 0},
+    "search-api": {"service": "search-api", "status": "DEGRADED", "http_5xx": 4},
+}
 
 
 def search_manual(keyword: str) -> list[dict]:

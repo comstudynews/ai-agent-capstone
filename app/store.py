@@ -8,6 +8,11 @@ from typing import Iterator
 DEFAULT_DB = "./data/capstone.sqlite3"
 
 
+class IdempotencyConflictError(ValueError):
+    """동일한 request_id로 서로 다른 티켓 데이터를 제출했습니다."""
+
+
+
 def db_path() -> Path:
     return Path(os.environ.get("DATABASE_PATH", DEFAULT_DB)).resolve()
 
@@ -48,13 +53,20 @@ def create_ticket(title: str, description: str, request_id: str) -> dict:
     if len(title.strip()) < 5 or len(description.strip()) < 10 or len(request_id) < 8:
         raise ValueError("Invalid ticket data")
     with connect() as db:
-        db.execute("INSERT OR IGNORE INTO tickets(title, description, request_id) VALUES (?,?,?)",
-                   (title, description, request_id))
+        inserted = True
+        try:
+            db.execute("INSERT INTO tickets(title, description, request_id) VALUES (?,?,?)",
+                       (title, description, request_id))
+        except sqlite3.IntegrityError:
+            inserted = False
         row = db.execute("SELECT * FROM tickets WHERE request_id=?", (request_id,)).fetchone()
-        inserted = db.execute("SELECT changes()").fetchone()[0]  # last INSERT changes
+        if row is None:
+            raise RuntimeError("티켓 저장 결과를 확인할 수 없습니다.")
+        if row["title"] != title or row["description"] != description:
+            raise IdempotencyConflictError("같은 요청 ID로 다른 티켓 내용을 등록할 수 없습니다.")
         return {"ticket_id": f"DEMO-{row['id']}", "title": row['title'],
                 "description": row['description'], "status": row['status'],
-                "created": bool(inserted)}
+                "created": inserted}
 
 
 def search_tickets(keyword: str) -> list[dict]:
