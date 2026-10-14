@@ -17,6 +17,10 @@
 | 브라우저 CORS 오류 | Next.js 3000 / FastAPI 8000이 실행 중인지, 요청 Origin 확인 |
 | SSE 답변이 마지막에 몰림 | `curl -N`, 브라우저 Network, 프록시 버퍼링 확인 |
 | LLM 401/429 | API Key 및 모델 권한·요금제·Rate Limit 확인 |
+| 티켓 생성이 403 | `DEMO_ADMIN_KEY`와 요청의 `X-Demo-Admin-Key` 확인 |
+| 티켓 생성이 409 | 같은 `request_id`로 이미 다른 제목이나 설명을 등록했는지 확인 |
+| MCP에서 티켓 생성 거부 | 신뢰할 수 있는 승인 API를 사용합니다. MCP 쓰기 Tool에는 서명된 승인 토큰이 필요합니다. |
+| 서비스 상태가 NOT_FOUND | 요청한 서비스명이 가상 모니터링 데이터에 존재하는지 확인 |
 
 ## MCP 서버 직접 실행과 Client 실행 구분
 

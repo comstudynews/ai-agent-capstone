@@ -1,4 +1,4 @@
-"""Actual stdio MCP server. Requires pip install -e '.[agent]'.
+"""Actual stdio MCP server. Requires `uv sync --extra agent`.
 
 Do not print to stdout while stdio protocol is active.
 """

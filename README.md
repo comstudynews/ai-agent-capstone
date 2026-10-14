@@ -66,7 +66,7 @@ uv sync --python 3.11 --group dev --extra agent
 uv run --extra agent python -m app.mcp_client
 ```
 
-성공하면 `tools`, `resource`, `prompt`, `tool_result` 값이 출력됩니다. Tool 4개, Runbook Resource, 진단 Prompt, 가상 모니터링 결과를 확인합니다.
+성공하면 `tools`, `resource`, `prompt`, `tool_result` 값이 출력됩니다. Tool 4개, Runbook Resource, 진단 Prompt, 가상 모니터링 결과를 확인합니다. 티켓 생성 Tool은 서명된 승인 토큰이 없으면 실행되지 않습니다.
 
 **서버만 직접 실행해 보기(선택):**
 
@@ -107,7 +107,19 @@ npm run dev
 
 각 외부 연동은 준비한 패키지·서버·키가 필요하므로, 개별 실습의 실행 결과를 확인하고 다음 단계로 넘어갑니다. 기본 실습 성공만으로 모든 외부 연동까지 실행되었다고 판단하지 않습니다.
 
-## 7. Recipe별 학습
+## 7. 서비스별 질문과 후속 질문 확인
+
+API 서버를 실행한 뒤 \`/docs\`의 \`POST /chat\`에서 다음 순서로 실습합니다. 같은 대화에 대해서는 \`thread_id\`를 동일하게 입력하세요.
+
+1. \`inventory-api 상태\`: 상태가 \`OK\`로 표시되는지 확인합니다.
+2. \`search-api 상태\`: 상태가 \`DEGRADED\`로 표시되는지 확인합니다.
+3. 2번에서 사용한 \`thread_id\`로 \`그 서비스 상태는?\`을 묻습니다. \`search-api\`가 이어지는지 확인합니다.
+4. 새로운 \`thread_id\`로 같은 질문을 보내면 서비스명을 묻는지 확인합니다.
+5. \`티켓 상태 알려줘\`는 서비스 장애가 아니라 티켓 조회로 분류됩니다.
+
+티켓 생성은 \`/tickets/approve\`와 개인 실습용 \`DEMO_ADMIN_KEY\`가 있어야 실행됩니다. 동일한 \`request_id\`로 같은 내용을 반복하면 새 티켓을 만들지 않고, 같은 ID로 다른 내용을 보내면 HTTP 409 오류를 반환합니다.
+
+## 8. Recipe별 학습
 
 각 장의 [단계별 Recipe](steps)는 `uv run python -m app.lesson N`(N=1~15)으로 작은 결과를 먼저 확인합니다. 이후 `steps/stepNN/README.md`에서 코드 파일, 통합 확인 방법, 오류를 해결하는 순서를 따라갑니다. 공통 코드는 `app/`에서 함께 사용됩니다.
 

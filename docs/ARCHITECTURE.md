@@ -28,7 +28,7 @@ flowchart TD
 - `POST /chat`: `{message, thread_id?}` -> `{thread_id, answer, events}`.
 - `POST /chat/stream`: same request -> SSE `start`, `state`, `token`, `done` or `error`.
 - `POST /chat/ui-stream`: AI SDK UI Message Stream v1 start/text-delta/finish/[DONE] (not the same format as custom SSE).
-- `POST /tickets/approve`: `{title, description, request_id}` plus private `X-Demo-Admin-Key` -> created ticket result.
-- MCP Tools: search_operations_manual, search_issue_tickets, read_monitoring_status, create_issue_ticket.
+- `POST /tickets/approve`: `{title, description, request_id}` plus private `X-Demo-Admin-Key` -> created ticket result, or HTTP 409 for a reused ID with different content.
+- MCP Tools: search_operations_manual, search_issue_tickets, read_monitoring_status, create_issue_ticket. The write tool requires an expiring HMAC approval token bound to title, description and request_id; the local approved API applies the same policy.
 - MCP Resource: `runbook://incident/{incident_type}`.
 - MCP Prompt: incident_diagnosis.

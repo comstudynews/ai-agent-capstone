@@ -1,6 +1,6 @@
 """Direct MCP protocol validation: tools + Resource + Prompt.
 
-Run: python -m app.mcp_client   (requires the agent extra).
+Run: uv run --extra agent python -m app.mcp_client.
 """
 import asyncio
 import sys

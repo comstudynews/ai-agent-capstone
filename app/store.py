@@ -12,7 +12,6 @@ class IdempotencyConflictError(ValueError):
     """동일한 request_id로 서로 다른 티켓 데이터를 제출했습니다."""
 
 
-
 def db_path() -> Path:
     return Path(os.environ.get("DATABASE_PATH", DEFAULT_DB)).resolve()
 
