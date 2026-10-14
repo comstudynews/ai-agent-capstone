@@ -1,0 +1,53 @@
+name: Cookbook code checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: astral-sh/setup-uv@v6
+      - name: Install
+        run: uv sync --python 3.11 --group dev
+      - name: Run tests
+        run: uv run --python 3.11 python -m pytest -q
+      - name: Run every lesson checkpoint
+        run: |
+          for recipe in $(seq 1 15); do
+            uv run --python 3.11 python -m app.lesson "$recipe" >/dev/null
+          done
+  mcp-stdio:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: astral-sh/setup-uv@v6
+      - name: Install MCP dependency group
+        run: uv sync --python 3.11 --extra agent
+      - name: Execute real MCP Client-Server stdio exchange
+        run: uv run --python 3.11 --extra agent python -m app.mcp_client
+  frontend-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
