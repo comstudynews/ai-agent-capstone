@@ -3,6 +3,9 @@
 Do not print to stdout while stdio protocol is active.
 """
 from mcp.server.fastmcp import FastMCP
+from dotenv import load_dotenv
+
+load_dotenv()
 from app.knowledge import get_runbook, monitoring_status
 from app.rag import retrieve
 from app.store import search_tickets

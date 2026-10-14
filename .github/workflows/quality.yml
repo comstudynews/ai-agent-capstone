@@ -34,6 +34,8 @@ jobs:
       - name: Install MCP dependency group
         run: uv sync --python 3.11 --extra agent
       - name: Execute real MCP Client-Server stdio exchange
+        env:
+          DEMO_ADMIN_KEY: ci-local-only-test-secret-123456
         run: uv run --python 3.11 --extra agent python -m app.mcp_client
   frontend-build:
     runs-on: ubuntu-latest
