@@ -1,61 +1,117 @@
-# AI Agent Capstone — Cookbook
+# AI Agent Capstone — 실전 AI 서비스 개발 Cookbook
 
-A standalone, fictional IT operations agent tutorial. All data and code are newly written and do not contain private institution, instructor or business information.
+MCP · RAG · LangGraph · FastAPI · Next.js로 가상의 IT 운영 지원 AI 서비스를 단계별로 만들어 봅니다. 먼저 API Key 없이 프로그램의 구조를 익히고, 이후 실제 MCP 통신과 LLM을 연결합니다.
 
-## Learning tracks
+## 시작 전에 알아둘 점
 
-- **Track A (offline, verified):** Python 3.11+ to 3.13, FastAPI, SQLite, deterministic Agent, MCP-like contracts, SSE, evaluation, routing, planning. No API key required.
-- **Track B (external integrations, not environment-verified):** actual stdio MCP server, LangChain / LangGraph with an LLM, Qdrant semantic search, PostgreSQL Checkpointer and Next.js frontend. These require packages and services described below.
+- 모든 명령은 별도 안내가 없다면 **프로젝트 최상위 폴더**(`ai-agent-capstone/`)에서 입력합니다.
+- **기본 실습**: 가상 데이터와 Python 프로그램으로 입출력·HTTP·SSE 원리를 확인합니다. 실제 LLM이나 MCP 호출과 구별합니다.
+- **연동 실습**: MCP SDK, 모델 API, VectorDB, PostgreSQL, Next.js를 개별적으로 연결하여 확인합니다. 연결하려는 서비스에 따라 인터넷·API Key·Docker·Node.js가 필요합니다.
+- 예제 데이터만 사용하고, `.env`·API Key·개인 정보는 GitHub에 올리지 않습니다.
 
-**Important:** Deterministic Track A teaches system boundaries but is **not itself an LLM or MCP-protocol integration**. For the latter, complete Track B and its verification commands.
+## 1. 개발 도구 확인
 
-## Quick start
-
-```bash
-python -m venv .venv
-# macOS/Linux:
-source .venv/bin/activate
-# Windows PowerShell:
-# .venv\Scripts\Activate.ps1
-pip install -e . pytest ruff
-cp .env.example .env  # Windows: copy .env.example .env
-python scripts/check_env.py
-pytest -q
-uvicorn app.api:app --host 127.0.0.1 --port 8000 --reload
-```
-
-Test `/health` at http://127.0.0.1:8000/health. To see streaming:
+먼저 [Python 3.11](https://www.python.org/downloads/), [Git](https://git-scm.com/downloads), [uv](https://docs.astral.sh/uv/getting-started/installation/)를 설치합니다. 웹 UI 및 Inspector를 사용하려면 Node.js 22.19 이상을 권장합니다.
 
 ```bash
-curl -N -X POST http://127.0.0.1:8000/chat/stream \
-  -H 'Content-Type: application/json' \
-  -d '{"message":"payment-api 500 장애 상태"}'
+python --version
+uv --version
+git --version
+node --version
+npm --version
 ```
 
-Frontend (requires npm registry/network): `cd frontend && npm install && npm run dev`. The Fetch-SSE UI is `/`; an additional UI Message Stream v1 / `useChat` integration example is `/ai-sdk` (see `app/ui_protocol.py`).
+**Windows:** `python` 대신 `py -3.11`을 사용할 수 있습니다. `uv`가 설치되지 않았다면 [공식 설치 절차](https://docs.astral.sh/uv/getting-started/installation/)를 운영체제에 맞게 먼저 진행하고 터미널을 다시 엽니다.
 
-## Actual MCP and LLM track
+## 2. 프로젝트 다운로드와 uv 가상환경
 
 ```bash
-pip install -e '.[agent,rag,persistence]' pytest ruff
-python -m app.mcp_server       # stdio: typically silent while waiting
-python -m app.mcp_client       # separate terminal: protocol round trip
+git clone https://github.com/comstudynews/ai-agent-capstone.git
+cd ai-agent-capstone
+uv python install 3.11
+uv sync --python 3.11 --group dev
+uv run python scripts/check_env.py
+uv run python -m pytest -q
+uv run python -m app.lesson 1
 ```
 
-Configure `AGENT_MODE=llm`, `OPENAI_API_KEY`, `OPENAI_MODEL` with a model you can access. The MCP server must use the pinned, compatible SDK v1 family. For Qdrant, index fictional documents with `python scripts/index_rag.py`, then set `SEARCH_MODE=qdrant`; using a Qdrant collection also requires adapting MCP manual Tool to call `app.rag.retrieve`. For Postgres, set `CHECKPOINT_MODE=postgres` and a real `DATABASE_URL`.
+`uv sync`는 `pyproject.toml`의 의존성을 설치하고 `.venv` 가상환경을 만듭니다. 패키지 다운로드를 위한 인터넷이 필요합니다. 생성된 `uv.lock`은 **잠금 파일 생성 이후**에 사용하므로, 첫 설치에서 패키지 해결 시간이 걸릴 수 있습니다. 명령이 실패하면 오류 내용을 읽고 [문제 해결 표](docs/TROUBLESHOOTING.md)를 확인합니다.
 
-## The 15 recipes
+**정상 결과:** `pytest` 테스트가 성공하고, Recipe 01에서 Tool·Resource·Prompt 기능 목록이 JSON으로 출력됩니다. 이는 기초 실습 결과입니다.
 
-Each recipe has an executable checkpoint `python -m app.lesson N` and a dedicated explanation under `steps/stepNN/README.md`. The checkpoints are **not** complete independent copies of the entire application; the common `app/` and `frontend/` directories cumulatively implement the service. MCP, LLM, Qdrant, Postgres, and frontend tracks require their own real service tests.
+> 이후 명령은 `uv run ...`을 사용합니다. 매번 `source .venv/bin/activate`를 입력할 필요가 없습니다.
 
-## Write-operation safety
+## 3. FastAPI 실행 (터미널 두 개)
 
-The chat Agent does not receive a ticket-creation Tool. In local demo mode a protected `POST /tickets/approve` endpoint requires a private `X-Demo-Admin-Key` that the student sets in `.env`; this is a controlled training exercise, **not production authentication**. Do not expose the demo API to the public internet. Never place that key in Next.js public environment variables.
+**터미널 A** — 프로젝트 루트에서 서버 실행:
 
-## Verification status
+```bash
+uv run python -m uvicorn app.api:app --host 127.0.0.1 --port 8000 --reload
+```
 
-- The offline unit/API tests run with no network and validate contracts, SQLite idempotency, routing, streaming, approvals and demo evaluation.
-- Actual MCP/LLM/VectorDB/PostgreSQL/Next.js builds require external packages/services. Source is provided for study, but those integrations must be verified in the target environment before public production use.
-- Package version ranges are **candidates**, not a proven lockfile. The runtime must be pinned after live compatibility tests.
+**터미널 B** — 같은 프로젝트 루트에서 확인:
 
-See `docs/VALIDATION.md`, `docs/ARCHITECTURE.md`, and each recipe page.
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+정상 응답 예: `{"status":"ok","mode":"demo"}`. 브라우저에서 <http://127.0.0.1:8000/docs>를 열고 `POST /chat`에 `{"message":"payment-api 500 상태"}`를 입력해 봅니다. 터미널 A는 실행 상태로 두고, 종료할 때는 `Ctrl+C`를 누릅니다.
+
+## 4. 실제 MCP 서버·클라이언트 통신 확인
+
+MCP는 HTTP API 서버와 별개입니다. 여기서는 **stdio 기반 MCP Client가 MCP Server 자식 프로세스를 자동으로 시작**합니다.
+
+```bash
+uv sync --python 3.11 --group dev --extra agent
+uv run --extra agent python -m app.mcp_client
+```
+
+성공하면 `tools`, `resource`, `prompt`, `tool_result` 값이 출력됩니다. Tool 4개, Runbook Resource, 진단 Prompt, 가상 모니터링 결과를 확인합니다.
+
+**서버만 직접 실행해 보기(선택):**
+
+```bash
+uv run --extra agent python -m app.mcp_server
+```
+
+이 명령은 stdio의 입력을 기다릴 수 있어 **화면에 아무것도 표시되지 않아도 오류가 아닙니다**. 일반 HTTP 서버처럼 포트를 열지 않습니다. `Ctrl+C`로 종료합니다. 실제 기능 테스트는 앞의 Client 명령으로 진행합니다.
+
+**Inspector에서 확인(선택):**
+
+```bash
+npx -y @modelcontextprotocol/inspector uv run --extra agent python -m app.mcp_server
+```
+
+Inspector가 안내하는 접속 주소를 브라우저로 열고 `Connect`한 다음 `Tools`, `Resources`, `Prompts`를 차례대로 선택합니다. `read_monitoring_status`의 인수 `service`에 `payment-api`를 입력하면 상태 `DEGRADED`를 확인할 수 있습니다. Inspector 명령은 Node.js와 패키지 다운로드가 필요합니다.
+
+**혼동하지 마세요:** `uv run python -m app.lesson 2`는 MCP **형태를 익히는 가상 데이터 실습**이고, `uv run --extra agent python -m app.mcp_client`가 **실제 MCP 프로토콜 연결 실습**입니다.
+
+## 5. 웹 채팅 UI 실행
+
+**터미널 C** — 서버와 별도 터미널에서:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+<http://localhost:3000>에서 질문하고 응답을 확인합니다. `.env`에 실제 키가 없어도 기본 실습 화면은 사용할 수 있습니다. **Next.js와 AI SDK는 Node.js/npm 버전 호환성을 먼저 확인**합니다. 브라우저 접속이 어려울 경우 FastAPI `/docs`에서 먼저 확인합니다.
+
+## 6. 고급 연동으로 확장
+
+1. LLM: `uv sync --extra agent` 후 `.env`에 `AGENT_MODE=llm`, 사용 가능한 `OPENAI_MODEL` 및 본인 `OPENAI_API_KEY`를 설정합니다. 인증정보는 코드·스크린샷에 넣지 않습니다.
+2. RAG: Qdrant를 실행하고 `uv sync --extra rag` 후 `uv run --extra rag python scripts/index_rag.py`로 가상 문서를 색인합니다. 
+3. 상태 영속화: PostgreSQL을 실행하고 `uv sync --extra persistence`, `.env`의 `CHECKPOINT_MODE=postgres` 및 `DATABASE_URL`을 설정합니다.
+4. 오류·실행 검증: [환경 및 오류 해결](docs/TROUBLESHOOTING.md)과 [실습 점검표](docs/VALIDATION.md)를 확인합니다.
+
+각 외부 연동은 준비한 패키지·서버·키가 필요하므로, 개별 실습의 실행 결과를 확인하고 다음 단계로 넘어갑니다. 기본 실습 성공만으로 모든 외부 연동까지 실행되었다고 판단하지 않습니다.
+
+## 7. Recipe별 학습
+
+각 장의 [단계별 Recipe](steps)는 `uv run python -m app.lesson N`(N=1~15)으로 작은 결과를 먼저 확인합니다. 이후 `steps/stepNN/README.md`에서 코드 파일, 통합 확인 방법, 오류를 해결하는 순서를 따라갑니다. 공통 코드는 `app/`에서 함께 사용됩니다.
+
+- [전체 프로그램의 동작 원리](docs/ARCHITECTURE.md)
+- [단계별 학습 방법](docs/LEARNING_GUIDE.md)
+- [문제 해결](docs/TROUBLESHOOTING.md)
+- [실습 점검표](docs/VALIDATION.md)

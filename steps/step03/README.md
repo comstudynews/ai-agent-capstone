@@ -1,39 +1,46 @@
-# Recipe 03. System boundaries
+# Recipe 03. 시스템 경계 설계
 
-## 1. What you will learn
+**학습 순서:** 무엇을 배우는가 → 왜 필요한가 → 작은 실행 → 코드 읽기 → 결과 확인 → 응용
 
-Who owns retrieval, transport, state, errors. Read the detailed theoretical chapter in Notion before running this checkpoint.
+## 1. 무엇을 배우는가?
+브라우저·API·Agent·MCP Client·Server 각각의 책임을 설명합니다.
 
-## 2. Prerequisite
+## 2. 시작 전 확인
+- 이전 Recipe를 실행했고 프로젝트 폴더 `ai-agent-capstone/`에 있는지 확인합니다.
+- 외부 계정이 없어도 기본 예제를 실행할 수 있습니다.
+- 문제가 생기면 [공통 문제 해결 가이드](../../docs/TROUBLESHOOTING.md)를 참고합니다.
 
-Run commands from the repository root. Complete Recipe 02 and `python scripts/check_env.py`. Demo mode works without external credentials; actual integration requires the optional extras noted in the root README.
-
-## 3. First successful observation
-
-```bash
-python -m app.lesson 3
-```
-
-Explain what the output represents and why this layer is needed. **This is a small checkpoint, not a claim that the full external integration is complete.**
-
-The self-contained checkpoint entrypoint is [complete.py](complete.py); execute `python -m steps.step03.complete` after installing the editable package. The shared `app/` implementation is the accumulated source of truth.
-
-## 4. Read the implementation
-
-Open [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md). Locate its inputs, return schema, side effects and error boundary. Modify one safe mock value in a disposable local copy, rerun the checkpoint, and compare the result.
-
-## 5. Verify and troubleshoot
+## 3. 가장 작은 예제부터 실행
 
 ```bash
-python -m pytest -q
+uv run python -m app.lesson 3
 ```
 
-If imports fail, check virtualenv and optional dependencies. If a network or API error occurs, use demo mode first, then use `docs/VALIDATION.md` to isolate the affected external component.
+**예상되는 출력의 핵심 키:** `boundary`. 출력 내용을 보고 이 단계에서 무엇을 배웠는지 한 문장으로 설명해 보세요.
 
-## 6. Reflection
+같은 예제의 실행 파일을 별도로 확인하려면 다음 명령을 사용합니다.
 
-- Which system component owns this behavior?
-- What happens if its input is invalid or missing?
-- How will you observe success without relying only on the model's wording?
+```bash
+uv run python -m steps.step03.complete
+```
 
-[Previous](../step02/README.md) · [Next](../step04/README.md)
+**주의:** 구조를 설명하는 가상 출력입니다.
+
+## 4. 코드 읽기
+
+[`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) 파일을 열고 입력값, 반환값, 변경되는 상태가 무엇인지 찾아봅니다. 화면에 나온 결과와 소스코드의 함수가 어떻게 연결되어 있는지 확인하세요.
+
+## 5. 응용 연습
+
+오류가 발생하면 어느 Layer가 처리할지 표로 정해 보세요.
+
+## 6. 오류 해결·완료 확인
+
+- [ ] 명령을 프로젝트 폴더에서 실행했습니다.
+- [ ] 예제 출력에서 `boundary` 항목을 찾았습니다.
+- [ ] 해당 함수를 읽고 입력과 출력을 설명할 수 있습니다.
+- [ ] 예제 값을 바꾼 뒤 다시 실행했습니다.
+
+전체 프로젝트 연결 과정은 [교재 제2장](https://app.notion.com/p/3f991bd5a9ac817a87bfd13dc433069c)에서 확인합니다.
+
+[이전 단계](../step02/README.md) · [전체 Recipe 목차](../../README.md) · [다음 단계](../step04/README.md)
