@@ -18,7 +18,17 @@ load_dotenv()
 
 
 async def inspect() -> dict:
-    parameters = StdioServerParameters(command=sys.executable, args=["-m", "app.mcp_server"])
+    # MCP stdio 기본 실행환경은 일부 환경변수를 전달하지 않을 수 있습니다.
+    # 승인에 필요한 로컬 설정만 명시적으로 전달합니다. LLM 키는 전달하지 않습니다.
+    allowed = {
+        "PATH", "HOME", "SYSTEMROOT", "APPDATA", "USERPROFILE", "TMP", "TEMP",
+        "VIRTUAL_ENV", "PYTHONPATH", "DATABASE_PATH",
+        "DEMO_ADMIN_KEY", "MCP_APPROVAL_SIGNING_KEY",
+    }
+    server_env = {key: value for key, value in os.environ.items() if key in allowed}
+    parameters = StdioServerParameters(
+        command=sys.executable, args=["-m", "app.mcp_server"], env=server_env
+    )
     async with stdio_client(parameters) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
